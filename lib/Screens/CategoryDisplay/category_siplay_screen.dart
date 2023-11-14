@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:naveenboutique/Packages/packages.dart';
 import 'package:naveenboutique/Screens/OrdersScreen/order_history.dart';
+import 'package:naveenboutique/Screens/Review/review_screen%5D.dart';
 
 import '../../main.dart';
 //import '../Orders/order_detail.dart';
@@ -81,7 +83,7 @@ class _CategoryDisplayScreenState extends State<CategoryDisplayScreen> {
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             mainAxisExtent:
-                                MediaQuery.of(context).size.height * 0.34),
+                                MediaQuery.of(context).size.height * 0.39),
                         itemBuilder: (context, index) {
                           return Padding(
                             padding: EdgeInsets.symmetric(
@@ -207,6 +209,53 @@ class _CategoryDisplayScreenState extends State<CategoryDisplayScreen> {
                                       ),
                                     ),
                                   ),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        InkWell(
+                                          onTap: () async {
+                                            SharedPreferences prefs =
+                                                await SharedPreferences
+                                                    .getInstance();
+                                            // service.addReview();
+                                            prefs.getBool('loggedin') == true
+                                                ? _showReviewDialog(
+                                                    context,
+                                                    snapshot.data[index]['id'],
+                                                    prefs
+                                                            .getString(
+                                                                'first_name')
+                                                            .toString() +
+                                                        prefs
+                                                            .getString(
+                                                                'last_name')
+                                                            .toString(),
+                                                    email)
+                                                : ScaffoldMessenger.of(context)
+                                                    .showSnackBar(alertmessage(
+                                                        context,
+                                                        'Login First',
+                                                        errorColor));
+                                          },
+                                          child: Text("Add Review",
+                                              style: TextStyle(
+                                                  color: buttonColor)),
+                                        ),
+                                        InkWell(
+                                            onTap: () {
+                                              nextScreen(
+                                                  context,
+                                                  Reviews(
+                                                      product_id: snapshot
+                                                          .data[index]['id']));
+                                            },
+                                            child: Text(
+                                              "Reviews",
+                                              style:
+                                                  TextStyle(color: buttonColor),
+                                            ))
+                                      ]),
                                 ],
                               ),
                             ),
@@ -221,6 +270,93 @@ class _CategoryDisplayScreenState extends State<CategoryDisplayScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showReviewDialog(
+    BuildContext context,
+    int prod_id,
+    String name,
+    String email1,
+  ) {
+    double _rating = 0;
+    String _reviewText = '';
+    bool _isSubmitting = false; // State variable for submission state
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text(
+                'Add Review',
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  RatingBar.builder(
+                    initialRating: _rating,
+                    minRating: 1,
+                    direction: Axis.horizontal,
+                    allowHalfRating: false,
+                    itemCount: 5,
+                    itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                    itemBuilder: (context, _) => Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                    onRatingUpdate: (rating) {
+                      setState(() {
+                        _rating = rating;
+                      });
+                    },
+                    itemSize: 35,
+                  ),
+                  SizedBox(height: 15),
+                  TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        _reviewText = value; // Store the user's input
+                      });
+                    },
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your review...',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  _isSubmitting
+                      ? Center(
+                          child:
+                              CircularProgressIndicator(), // Show circular progress indicator while submitting
+                        )
+                      : ElevatedButton(
+                          onPressed: () async {
+                            setState(() {
+                              _isSubmitting =
+                                  true; // Set the state to indicate submission is in progress
+                            });
+
+                            // Call the addReview function here with user inputs
+                            await service.addReview(prod_id, _reviewText, name,
+                                email1, _rating.toInt());
+                            Navigator.of(context).pop();
+                          },
+                          style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(buttonColor),
+                          ),
+                          child: Text('Submit Review'),
+                        ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

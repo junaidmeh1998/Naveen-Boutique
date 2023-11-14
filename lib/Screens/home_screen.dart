@@ -293,18 +293,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   await SharedPreferences
                                                       .getInstance();
                                               // service.addReview();
-                                              _showReviewDialog(
-                                                  context,
-                                                  snapshot.data[index]['id'],
-                                                  prefs
-                                                          .getString(
-                                                              'first_name')
-                                                          .toString() +
+                                              prefs.getBool('loggedin') == true
+                                                  ? _showReviewDialog(
+                                                      context,
+                                                      snapshot.data[index]
+                                                          ['id'],
                                                       prefs
-                                                          .getString(
-                                                              'last_name')
-                                                          .toString(),
-                                                  email);
+                                                              .getString(
+                                                                  'first_name')
+                                                              .toString() +
+                                                          prefs
+                                                              .getString(
+                                                                  'last_name')
+                                                              .toString(),
+                                                      email)
+                                                  : ScaffoldMessenger.of(
+                                                          context)
+                                                      .showSnackBar(
+                                                          alertmessage(
+                                                              context,
+                                                              'Login First',
+                                                              errorColor));
                                             },
                                             child: Text("Add Review",
                                                 style: TextStyle(
@@ -525,6 +534,57 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                     ),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          InkWell(
+                                            onTap: () async {
+                                              SharedPreferences prefs =
+                                                  await SharedPreferences
+                                                      .getInstance();
+                                              // service.addReview();
+                                              prefs.getBool('loggedin') == true
+                                                  ? _showReviewDialog(
+                                                      context,
+                                                      snapshot.data[index]
+                                                          ['id'],
+                                                      prefs
+                                                              .getString(
+                                                                  'first_name')
+                                                              .toString() +
+                                                          prefs
+                                                              .getString(
+                                                                  'last_name')
+                                                              .toString(),
+                                                      email)
+                                                  : ScaffoldMessenger.of(
+                                                          context)
+                                                      .showSnackBar(
+                                                          alertmessage(
+                                                              context,
+                                                              'Login First',
+                                                              errorColor));
+                                            },
+                                            child: Text("Add Review",
+                                                style: TextStyle(
+                                                    color: buttonColor)),
+                                          ),
+                                          InkWell(
+                                              onTap: () {
+                                                nextScreen(
+                                                    context,
+                                                    Reviews(
+                                                        product_id:
+                                                            snapshot.data[index]
+                                                                ['id']));
+                                              },
+                                              child: Text(
+                                                "Reviews",
+                                                style: TextStyle(
+                                                    color: buttonColor),
+                                              ))
+                                        ]),
                                   ],
                                 ),
                               ),
